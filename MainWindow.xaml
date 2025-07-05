@@ -1,0 +1,76 @@
+﻿<Window x:Class="AIWikiHelper.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        mc:Ignorable="d"
+        Title="AI Project Wiki Helper" Height="700" Width="1200" WindowStartupLocation="CenterScreen">
+    <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="15"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Pane: Project List -->
+        <DockPanel Grid.Column="0">
+            <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0" Orientation="Horizontal">
+                <Button x:Name="NewProjectButton" Content="New Project" Padding="10,5" Click="NewProjectButton_Click"/>
+                <Button x:Name="SummarizeWeekButton" Content="Summarize Week" Padding="10,5" Margin="5,0,0,0" Click="SummarizeWeekButton_Click"/>
+                <Button x:Name="RefreshButton" Content="Refresh" Margin="5,0,0,0" Padding="10,5" Click="RefreshButton_Click"/>
+            </StackPanel>
+            <Label DockPanel.Dock="Top" Content="Projects" FontWeight="Bold"/>
+            <ListBox x:Name="ProjectList" SelectionChanged="ProjectList_SelectionChanged"/>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+
+        <!-- Right Pane: Main Content -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="250"/>
+            </Grid.RowDefinitions>
+
+            <!-- Wiki Viewer/Editor -->
+            <TabControl Grid.Row="0">
+                <TabItem Header="View Wiki">
+                    <wv2:WebView2 x:Name="WebView" />
+                </TabItem>
+                <TabItem Header="Edit Wiki">
+                    <DockPanel>
+                        <Button x:Name="SaveButton" DockPanel.Dock="Bottom" Content="Save Changes" Margin="0,10,0,0" Padding="10,5" Click="SaveButton_Click"/>
+                        <TextBox x:Name="WikiEditor" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
+                    </DockPanel>
+                </TabItem>
+            </TabControl>
+
+            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+            <!-- AI Interaction Panel -->
+            <GroupBox Header="AI Assistant" Grid.Row="2" Margin="0,10,0,0" FontWeight="Bold">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBox x:Name="TranscriptInput" Grid.Row="0" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsReturn="True" />
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
+                        <Label Content="Target Section:"/>
+                        <ComboBox x:Name="TargetSectionCombo" VerticalContentAlignment="Center" MinWidth="150">
+                            <ComboBoxItem Content="Daily Log"/>
+                            <ComboBoxItem Content="Overview"/>
+                            <ComboBoxItem Content="Goals"/>
+                            <ComboBoxItem Content="Key Features"/>
+                            <ComboBoxItem Content="Risks/Mitigations"/>
+                        </ComboBox>
+                        <Button x:Name="GenerateButton" Content="Generate Suggestion" Padding="10,5" Margin="20,0,0,0" Click="GenerateButton_Click"/>
+                        <Button x:Name="AttachFileButton" Content="Attach Transcript File..." Padding="10,5" Margin="10,0,0,0" Click="AttachFileButton_Click"/>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</Window>
