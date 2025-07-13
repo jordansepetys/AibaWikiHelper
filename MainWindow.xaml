@@ -4,73 +4,112 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="AI Project Wiki Helper" Height="700" Width="1200" WindowStartupLocation="CenterScreen">
-    <Grid Margin="10">
+        Title="AI Wiki Helper" Height="700" Width="1100"
+        materialDesign:ColorZoneAssist.Mode="PrimaryDark"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="16">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
-            <ColumnDefinition Width="15"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="200"/>
+            <!-- Narrower left panel to emphasize wiki -->
+            <ColumnDefinition Width="5"/>
+            <!-- For GridSplitter -->
+            <ColumnDefinition Width="*" />
+            <!-- Wiki/AI takes most space -->
         </Grid.ColumnDefinitions>
 
-        <!-- Left Pane: Project List -->
-        <DockPanel Grid.Column="0">
-            <StackPanel DockPanel.Dock="Bottom" Margin="0,10,0,0" Orientation="Horizontal">
-                <Button x:Name="NewProjectButton" Content="New Project" Padding="10,5" Click="NewProjectButton_Click"/>
-                <Button x:Name="SummarizeWeekButton" Content="Summarize Week" Padding="10,5" Margin="5,0,0,0" Click="SummarizeWeekButton_Click"/>
-                <Button x:Name="RefreshButton" Content="Refresh" Margin="5,0,0,0" Padding="10,5" Click="RefreshButton_Click"/>
+        <!-- Left Panel: Projects -->
+        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+            <TextBlock Text="Projects" FontSize="20" FontWeight="Bold" Margin="0,0,0,8"/>
+            <ListBox Height="300" Margin="0,0,0,8"
+                     ItemsSource="{Binding Projects}"
+                     SelectedItem="{Binding SelectedProject}"
+                     Style="{StaticResource MaterialDesignListBox}">
+            </ListBox>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <Button Content="New" Command="{Binding NewProjectCommand}"
+                        Style="{StaticResource MaterialDesignFlatButton}" Margin="0,0,8,0"/>
+                <Button Content="Refresh" Command="{Binding RefreshProjectsCommand}"
+                        Style="{StaticResource MaterialDesignFlatButton}"/>
             </StackPanel>
-            <Label DockPanel.Dock="Top" Content="Projects" FontWeight="Bold"/>
-            <ListBox x:Name="ProjectList" SelectionChanged="ProjectList_SelectionChanged"/>
-        </DockPanel>
+            <Button Content="Summarize Week" Command="{Binding SummarizeWeekCommand}"
+                    Style="{StaticResource MaterialDesignRaisedButton}" Margin="0,0,0,8"/>
+        </StackPanel>
 
-        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
+        <!-- Resizable Splitter -->
+        <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent"/>
 
-        <!-- Right Pane: Main Content -->
+        <!-- Right Panel: Wiki (top/expandable) + AI (bottom/fixed) -->
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="250"/>
+                <RowDefinition Height="*" />
+                <!-- Wiki tabs expand to fill most height -->
+                <RowDefinition Height="Auto" />
+                <!-- AI at bottom, auto-sized -->
             </Grid.RowDefinitions>
 
-            <!-- Wiki Viewer/Editor -->
-            <TabControl Grid.Row="0">
-                <TabItem Header="View Wiki">
-                    <wv2:WebView2 x:Name="WebView" />
-                </TabItem>
-                <TabItem Header="Edit Wiki">
-                    <DockPanel>
-                        <Button x:Name="SaveButton" DockPanel.Dock="Bottom" Content="Save Changes" Margin="0,10,0,0" Padding="10,5" Click="SaveButton_Click"/>
-                        <TextBox x:Name="WikiEditor" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
-                    </DockPanel>
-                </TabItem>
-            </TabControl>
+            <!-- Wiki Tabs (Primary Area) -->
+            <materialDesign:Card Grid.Row="0" Padding="8" Margin="0,0,0,16">
+                <TabControl SelectionChanged="TabControl_SelectionChanged">
+                    <TabControl.ItemContainerStyle>
+                        <Style TargetType="TabItem" BasedOn="{StaticResource {x:Type TabItem}}">
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Height" Value="28"/>
+                            <Setter Property="Padding" Value="8,4"/>
+                        </Style>
+                    </TabControl.ItemContainerStyle>
+                    <TabItem Header="Edit">
+                        <StackPanel>
+                            <TextBlock Text="Wiki Editor" FontSize="20" FontWeight="Bold" Margin="0,0,0,8"/>
+                            <TextBox AcceptsReturn="True" Margin="0,0,0,8" VerticalScrollBarVisibility="Auto"
+                                     Text="{Binding WikiContent, UpdateSourceTrigger=PropertyChanged}"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}" />
+                            <Button Content="Save" Command="{Binding SaveCommand}"
+                                    Style="{StaticResource MaterialDesignRaisedButton}" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </TabItem>
+                    <TabItem Header="View">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <!-- For the header TextBlock -->
+                                <RowDefinition Height="*" />
+                                <!-- WebView fills the rest -->
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Wiki View" FontSize="20" FontWeight="Bold" Margin="0,0,0,8" Grid.Row="0"/>
+                            <wv2:WebView2 x:Name="WebView" Margin="0,0,0,8" Grid.Row="1"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </materialDesign:Card>
 
-            <GridSplitter Grid.Row="1" Height="5" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-
-            <!-- AI Interaction Panel -->
-            <GroupBox Header="AI Assistant" Grid.Row="2" Margin="0,10,0,0" FontWeight="Bold">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <TextBox x:Name="TranscriptInput" Grid.Row="0" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" AcceptsReturn="True" />
-                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,0">
-                        <Label Content="Target Section:"/>
-                        <ComboBox x:Name="TargetSectionCombo" VerticalContentAlignment="Center" MinWidth="150">
-                            <ComboBoxItem Content="Daily Log"/>
-                            <ComboBoxItem Content="Overview"/>
-                            <ComboBoxItem Content="Goals"/>
-                            <ComboBoxItem Content="Key Features"/>
-                            <ComboBoxItem Content="Risks/Mitigations"/>
-                        </ComboBox>
-                        <Button x:Name="GenerateButton" Content="Generate Suggestion" Padding="10,5" Margin="20,0,0,0" Click="GenerateButton_Click"/>
-                        <Button x:Name="AttachFileButton" Content="Attach Transcript File..." Padding="10,5" Margin="10,0,0,0" Click="AttachFileButton_Click"/>
+            <!-- AI Section (Bottom) -->
+            <materialDesign:Card Grid.Row="1" Padding="8">
+                <StackPanel>
+                    <TextBlock Text="AI Assistant" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Target Section" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,4"/>
+                    <!-- Label -->
+                    <ComboBox Margin="0,0,0,8" Width="200" HorizontalAlignment="Left" SelectedValue="{Binding TargetSection}" SelectedValuePath="Content">
+                        <ComboBoxItem Content="Overview"/>
+                        <ComboBoxItem Content="Goals"/>
+                        <ComboBoxItem Content="Key Features"/>
+                        <ComboBoxItem Content="Risks/Mitigations"/>
+                        <ComboBoxItem Content="Daily Log"/>
+                    </ComboBox>
+                    <TextBox AcceptsReturn="True" Height="80" Margin="0,0,0,8"
+                             Text="{Binding TranscriptInput, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource MaterialDesignOutlinedTextBox}" 
+                             materialDesign:HintAssist.Hint="Paste transcript here..."/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="Attach File" Command="{Binding AttachFileCommand}"
+                                Style="{StaticResource MaterialDesignFlatButton}" Margin="0,0,8,0"/>
+                        <Button Content="Generate Suggestion" Command="{Binding GenerateSuggestionCommand}"
+                                Style="{StaticResource MaterialDesignRaisedButton}"/>
                     </StackPanel>
-                </Grid>
-            </GroupBox>
+                </StackPanel>
+            </materialDesign:Card>
         </Grid>
     </Grid>
 </Window>
