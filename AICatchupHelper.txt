@@ -1,0 +1,48 @@
+Project Name: AibaWikiHelper (also referred to as AI Project Wiki Helper or AIWikiHelper)
+
+Project Overview/Description:
+
+This is a C# WPF desktop application that serves as an intelligent editor for project documentation. It helps manage project wikis and daily logs by using AI (via OpenAI API) to analyze meeting transcripts, informal notes, or attached files and suggest updates. Projects are stored as local Markdown files. Key goal: Automate and streamline project management by generating suggestions for wiki sections like Overview, Goals, Key Features, Risks/Mitigations, and Daily Log.
+
+Tech Stack:
+
+Language: C#
+Framework: .NET (WPF for UI)
+IDE: Visual Studio 2022 with .NET desktop development workload
+UI Libraries: MaterialDesignInXamlToolkit (for Material Design themes and controls)
+Markdown Processing: Markdig (for converting Markdown to HTML)
+Web Rendering: Microsoft.Web.WebView2.Wpf (WebView2 control for displaying rendered HTML in the "View" tab)
+AI Integration: OpenAI API (for generating suggestions from transcripts/notes)
+Other: System.Windows, System.ComponentModel, etc. (standard WPF namespaces)
+File Handling: Supports .txt, .vtt, .docx for attachments; local Markdown (.md) for wikis
+Key Features:
+
+Project Management: List and select projects from a sidebar; create new ones; refresh list. Each project has a dedicated Markdown wiki file.
+Dual-View Editor: "Edit" tab for raw Markdown editing; "View" tab renders it as HTML via WebView2.
+AI Assistant: Paste transcripts/notes or attach files; select target section (e.g., Overview, Goals, Key Features, Risks/Mitigations, Daily Log); generate AI suggestions. Review/edit suggestions in a dialog before applying.
+Weekly Summary: One-click AI-generated summary of the past 7 days' daily logs.
+Commands: New Project, Refresh Projects, Save Wiki, Attach File, Generate Suggestion, Summarize Week.
+UI Elements: Resizable splitter between panels; TabControl for Edit/View; ComboBox for section selection; Material Design styling for buttons, cards, etc.
+Setup and Configuration:
+
+Clone the repo: git clone https://github.com/jordansepetys/AibaWikiHelper.git
+Open AIWikiHelper.sln in Visual Studio 2022.
+Configure OpenAI API: Copy appsettings.template.json to appsettings.json; replace "YOUR_API_KEY_GOES_HERE" with your actual OpenAI key.
+Install Dependencies: Ensure NuGet packages are restored (right-click solution > Restore NuGet Packages). Key packages: Markdig, Microsoft.Web.WebView2, MaterialDesignThemes, OpenAI SDK (if explicit).
+Build and Run: F5 in VS; app launches with projects panel on left, wiki/AI on right.
+WebView2 Runtime: Download/install from Microsoft if not present (required for rendering).
+Local Path (on my machine): C:\ArnieAI\Aiba\AIWikiHelper
+Usage Guide:
+
+Select a project from the left list.
+In "Edit" tab: Type Markdown content; save with button.
+Switch to "View" tab: See rendered HTML.
+AI Section (bottom): Choose target section via ComboBox; paste transcript or attach file; click "Generate Suggestion" to get AI output; edit/apply.
+For Weekly Summary: Click "Summarize Week" button.
+GitHub Integration: Push changes via VS Git tools (commit to main, push to origin).
+Recent Changes/Fixes (as of July 13, 2025):
+
+Fixed crash on tab switch (WebView2 initialization timing issues).
+Resolved blank "View" tab: Added safeguards in code (null checks, async init), wrapped Markdown HTML fully, used temp file navigation workaround for reliability, and switched "View" tab layout from StackPanel to Grid for proper stretching.
+Diagnostics added/removed: Temporary MessageBoxes, background color scripts for testing.
+No major new features; focus on stability.

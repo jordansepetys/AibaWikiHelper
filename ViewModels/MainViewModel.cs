@@ -156,7 +156,24 @@ namespace AIWikiHelper.ViewModels
         {
             LoadProjectList();
         }
+        private Dictionary<string, string> ParseBundledSuggestions(string bundledText)
+        {
+            var suggestions = new Dictionary<string, string>();
+            var parts = bundledText.Split(new[] { "---" }, StringSplitOptions.RemoveEmptyEntries);
 
+            foreach (var part in parts)
+            {
+                var match = Regex.Match(part.Trim(), @"^(\w+(?:\s*\w+)*?):\s*(.*)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    string section = match.Groups[1].Value.Trim();
+                    string content = match.Groups[2].Value.Trim();
+                    suggestions[section] = content;
+                }
+            }
+
+            return suggestions;
+        }
         private async Task SaveAsync()
         {
             if (string.IsNullOrEmpty(SelectedProject))
@@ -189,20 +206,43 @@ namespace AIWikiHelper.ViewModels
 
             try
             {
-                string prompt = _aiService.BuildPrompt(SelectedProject, TranscriptInput, TargetSection, WikiContent);
-                string suggestion = await _aiService.GetAiSuggestionAsync(prompt);
+                // Enhanced auto-detect: Allow multiple sections
+                string classificationPrompt = $"Classify this transcript into RELEVANT wiki sections (up to 3) from: Overview, Goals, Key Features, Risks/Mitigations, Daily Log. Output ONLY a comma-separated list of exact section names (no explanations, e.g., 'Daily Log, Risks/Mitigations'). If only one, just output that.\nTranscript: {TranscriptInput}";
+                string suggestedSectionsStr = (await _aiService.GetAiSuggestionAsync(classificationPrompt)).Trim();
 
-                if (string.IsNullOrWhiteSpace(suggestion))
+                // Parse and validate sections
+                var suggestedSections = suggestedSectionsStr.Split(',').Select(s => s.Trim()).ToList();
+                var validSections = new[] { "Overview", "Goals", "Key Features", "Risks/Mitigations", "Daily Log" };
+                suggestedSections = suggestedSections.Where(validSections.Contains).ToList(); // Filter invalid
+
+                if (!suggestedSections.Any())
+                {
+                    suggestedSections.Add("Daily Log"); // Default
+                    MessageBox.Show("AI couldn't classify; defaulting to 'Daily Log'.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+                // Build bundled prompt for multiple sections
+                string bundledPrompt = _aiService.BuildBundledPrompt(SelectedProject, TranscriptInput, suggestedSections, WikiContent);
+
+                string bundledSuggestion = await _aiService.GetAiSuggestionAsync(bundledPrompt);
+
+                if (string.IsNullOrWhiteSpace(bundledSuggestion))
                 {
                     MessageBox.Show("AI returned an empty suggestion.", "No Suggestion", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                var dialog = new SuggestionDialog(suggestion);
+                // Parse bundled response
+                var suggestions = ParseBundledSuggestions(bundledSuggestion);
+
+                // Show multi-suggestion dialog
+                var dialog = new MultiSuggestionDialog(suggestions);
                 if (dialog.ShowDialog() == true)
                 {
-                    string finalSuggestion = dialog.EditedSuggestion; // Assuming this property exists
-                    ApplySuggestion(TargetSection, finalSuggestion);
+                    foreach (var kvp in dialog.ApprovedSuggestions)
+                    {
+                        ApplySuggestion(kvp.Key, kvp.Value);
+                    }
                 }
             }
             catch (Exception ex)
@@ -225,7 +265,7 @@ namespace AIWikiHelper.ViewModels
                     MessageBox.Show("No new log entries to add.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
-                WikiContent = _aiService.InsertIntoSection(WikiContent, "Daily Log", suggestion);
+                WikiContent = _aiService.InsertDailyLogEntry(WikiContent, suggestion);
             }
             else
             {

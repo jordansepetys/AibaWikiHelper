@@ -88,7 +88,7 @@
             <!-- AI Section (Bottom) -->
             <materialDesign:Card Grid.Row="1" Padding="8">
                 <StackPanel>
-                    <TextBlock Text="AI Assistant" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                    <TextBlock Text="Type or Paste Notes Here" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,4"/>
                     <TextBlock Text="Target Section" FontSize="14" FontWeight="SemiBold" Margin="0,8,0,4"/>
                     <!-- Label -->
                     <ComboBox Margin="0,0,0,8" Width="200" HorizontalAlignment="Left" SelectedValue="{Binding TargetSection}" SelectedValuePath="Content">
@@ -98,10 +98,12 @@
                         <ComboBoxItem Content="Risks/Mitigations"/>
                         <ComboBoxItem Content="Daily Log"/>
                     </ComboBox>
-                    <TextBox AcceptsReturn="True" Height="80" Margin="0,0,0,8"
+                    <TextBox AcceptsReturn="True" Height="85" Margin="0,0,0,8"
                              Text="{Binding TranscriptInput, UpdateSourceTrigger=PropertyChanged}"
                              Style="{StaticResource MaterialDesignOutlinedTextBox}" 
-                             materialDesign:HintAssist.Hint="Paste transcript here..."/>
+                             materialDesign:HintAssist.Hint="Paste transcript here..."
+                             VerticalScrollBarVisibility="Auto"
+                             TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                         <Button Content="Attach File" Command="{Binding AttachFileCommand}"
                                 Style="{StaticResource MaterialDesignFlatButton}" Margin="0,0,8,0"/>
